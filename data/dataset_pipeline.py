@@ -10,16 +10,12 @@
 # @ Software   : PyCharm
 #-------------------------------------------------------
 
-import re
 import numpy as np
 import os
-import time
 import json
-from glob import glob
-from PIL import Image
 import pickle
 import tensorflow as tf
-# Scikit-learn includes many helpful utilities
+
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 from tqdm import tqdm
@@ -191,7 +187,6 @@ def split_dataset(image_name, sequence, split_ratio):
                                                                                   sequence,
                                                                                   test_size=split_ratio)
     return img_name_train, img_name_val, cap_train, cap_val
-
 
 
 # def word_to_index(text, word_index):
