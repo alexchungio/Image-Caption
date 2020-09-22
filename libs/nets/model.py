@@ -48,7 +48,6 @@ class BahdanauAttention(tf.keras.Model):
         return context_vector, attention_weights
 
 
-
 class CNNEencoder(tf.keras.Model):
     """
 
@@ -92,14 +91,14 @@ class RNNDecoder(tf.keras.Model):
         :param hidden:  (batch_size, hidden_size)
         :return:
         """
-        # context_vector => (batch_size, embedding_dim)
+        # context_vector => (batch_size, embedding_dim(hidden_size))
         # attention_weights => (batch_size, 64, 1)
         context_vector, attention_weights = self.attention(feature, hidden)
 
         # embedding layer x => (batch_size, 1, embedding_dim)
         x = self.embedding(x)
 
-        # x after concat => (batch_size, 1, embedding_dim + embedding_dim)
+        # x after concat => (batch_size, 1,  embedding_dim + embedding_dim(hidden_size))
         x = tf.concat([tf.expand_dims(context_vector, axis=1), x], axis=-1)
 
         # passing the concatenated vector to gru
