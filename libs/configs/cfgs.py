@@ -69,20 +69,20 @@ WORD_INDEX = ROOT_PATH + '/outputs/word_index.pickle'
 SEQ_MAX_LENGTH = ROOT_PATH + '/outputs/seq_max_length.pickle'
 
 #----------------------Data---------------------
-DATASET_PATH = os.path.join(ROOT_PATH, 'data', 'spa-eng', 'spa.txt')
-
+DATASET_PATH = '/media/alex/AC6A2BDB6A2BA0D6/alex_dataset/COCO_2017'
 
 #------------------------network config--------------------------------
 BATCH_SIZE = 32
 NUM_WORDS = 5000
-SEQUENCE_LENGTH = 100 # the number in singe time dimension of a single sequence of input data
-VOCAB_SIZE = 26
+# SEQUENCE_LENGTH = 100 # the number in singe time dimension of a single sequence of input data
+# VOCAB_SIZE = 26
+NUM_UNITS = 512
 EMBEDDING_DIM = 256
 
+FEATURE_SHAPE = 2048
+ATTENTION_FEATURE_SHAPE = 64
+
 # NUM_UNITS = [128, 64, 32]
-NUM_UNITS = 1024
-
-
 #-------------------------train config-------------------------------
 EMBEDDING_TRANSFER = False
 LEARNING_RATE = 0.001
