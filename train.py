@@ -127,7 +127,7 @@ if __name__ == "__main__":
                 # teacher forcing the target word is passed as the next input to the decoder
                 decoder_input = tf.expand_dims(target[:, i], axis=1)
 
-        total_loss = (loss / int(target.shape[1]))
+        total_loss = loss / int(target.shape[1])
         trainable_variables = encoder.trainable_variables + encoder.trainable_variables
 
         gradients = tape.gradient(loss, trainable_variables)
@@ -143,13 +143,12 @@ if __name__ == "__main__":
 
         start_time = time.time()
         num_steps = 0
-        total_loss = []
+        total_loss = 0
 
         for (batch, (image_feature, image_caption)) in enumerate(train_dataset):
 
             batch_loss, t_loss = train_step(image_feature, image_caption)
             total_loss += t_loss
-
             num_steps += 1
 
             if batch % cfgs.SHOW_TRAIN_INFO_INTE == 0:
@@ -157,19 +156,17 @@ if __name__ == "__main__":
                     print('Epoch {} Batch {} Loss {:.4f}'.format(
                         epoch + 1, batch, batch_loss.numpy() / int(image_caption.shape[1])))
 
-
-        # storing the epoch end loss value to plot later
-        loss_plot.append(total_loss[0] / num_steps)
-
         if epoch % 5 == 0:
             ckpt_manager.save()
+
+        with summary_writer.as_default():
+            tf.summary.scalar('loss', (total_loss / num_steps).numpy(), step=epoch)
 
         print('Epoch {} Loss {:.6f}'.format(epoch + 1,
                                             total_loss[0] / num_steps))
         print('Time taken for 1 epoch {} sec\n'.format(time.time() - start_time))
 
-        with summary_writer.as_default():
-            tf.summary.scalar('loss', total_loss.numpy(), step=epoch)
+
 
 
     #

@@ -60,7 +60,7 @@ TEST_SAVE_PATH = ROOT_PATH + '/outputs/test_results'
 INFERENCE_IMAGE_PATH = ROOT_PATH + '/outputs/inference_image'
 # INFERENCE_SAVE_PATH = ROOT_PATH + '/tools/inference_results'
 # IMAGE_FEATURE_PATH = ROOT_PATH + '/data/image_feature'
-IMAGE_FEATURE_PATH = '/media/alex/80CA308ECA308288/alex_outputs/image_feature'
+IMAGE_FEATURE_PATH = '/mnt/mnt0/alex_outputs/image_feature'
 
 TRAINED_CKPT = os.path.join(ROOT_PATH, 'outputs/trained_weights')
 EVALUATE_DIR = ROOT_PATH + '/outputs/evaluate_result'
@@ -86,7 +86,7 @@ ATTENTION_FEATURE_SHAPE = 64
 #-------------------------train config-------------------------------
 EMBEDDING_TRANSFER = False
 LEARNING_RATE = 0.001
-NUM_EPOCH = 10
+NUM_EPOCH = 20
 KEEP_PROB = 1.0
 
 # data
