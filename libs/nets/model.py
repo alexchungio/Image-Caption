@@ -33,7 +33,7 @@ class BahdanauAttention(tf.keras.Model):
         hidden_with_time_axis = tf.expand_dims(hidden, axis=1)
 
         # attention_hidden_layer => (batch_size, 64, num_units)
-        attention_hidden_layer = (tf.nn.tanh(self.W1(feature), self.W2(hidden_with_time_axis)))
+        attention_hidden_layer = (tf.nn.tanh(self.W1(feature) + self.W2(hidden_with_time_axis)))
 
         # scores => (batch_size, 64, 1)
         scores = self.V(attention_hidden_layer)
