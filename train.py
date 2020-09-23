@@ -154,16 +154,16 @@ if __name__ == "__main__":
             if batch % cfgs.SHOW_TRAIN_INFO_INTE == 0:
                 if batch % 100 == 0:
                     print('Epoch {} Batch {} Loss {:.4f}'.format(
-                        epoch + 1, batch, batch_loss.numpy() / int(image_caption.shape[1])))
+                        epoch + 1, batch, batch_loss / int(image_caption.shape[1])))
 
         if epoch % 5 == 0:
             ckpt_manager.save()
 
         with summary_writer.as_default():
-            tf.summary.scalar('loss', (total_loss / num_steps).numpy(), step=epoch)
+            tf.summary.scalar('loss', (total_loss / num_steps), step=epoch)
 
         print('Epoch {} Loss {:.6f}'.format(epoch + 1,
-                                            total_loss[0] / num_steps))
+                                            total_loss / num_steps))
         print('Time taken for 1 epoch {} sec\n'.format(time.time() - start_time))
 
 
