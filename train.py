@@ -34,6 +34,9 @@ if __name__ == "__main__":
     train_images, train_captions = load_dataset(train_image_path, train_annotation_path, num_examples=50000)
     print(len(train_images), len(train_captions))
 
+    # get step per epoch
+    step_per_epoch = int(len(train_images) / cfgs.BATCH_SIZE)
+
     # initialize inception_v3 and construct model
     train_sequence = tokenize(train_captions)
     img_name_train, img_name_val, cap_train, cap_val = split_dataset(train_images, train_sequence,
@@ -145,17 +148,15 @@ if __name__ == "__main__":
         num_steps = 0
         total_loss = 0
 
-        for (batch, (image_feature, image_caption)) in enumerate(train_dataset):
+        for (batch, (image_feature, image_caption)) in enumerate(train_dataset.take(step_per_epoch)):
 
             batch_loss, t_loss = train_step(image_feature, image_caption)
             total_loss += t_loss
             num_steps += 1
 
             if batch % cfgs.SHOW_TRAIN_INFO_INTE == 0:
-                if batch % 100 == 0:
-                    print('Epoch {} Batch {} Loss {:.4f}'.format(
-                        epoch + 1, batch, batch_loss / int(image_caption.shape[1])))
-
+                print('Epoch {} Batch {} Loss {:.4f}'.format(
+                    epoch + 1, batch, batch_loss / int(image_caption.shape[1])))
         if epoch % 5 == 0:
             ckpt_manager.save()
 
