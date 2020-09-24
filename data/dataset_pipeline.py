@@ -23,12 +23,8 @@ from tqdm import tqdm
 from libs.configs import cfgs
 from utils.tools import makedir
 
-train_image_path = os.path.join('/media/alex/AC6A2BDB6A2BA0D6/alex_dataset/COCO_2017', 'train2017')
-train_annotation_path = os.path.join('/media/alex/AC6A2BDB6A2BA0D6/alex_dataset/COCO_2017', 'annotations',
-                                     'captions_train2017.json')
 
-
-def dataset_batch(img_name, img_caption, batch_size, buffer_size=1000, epoch=None):
+def dataset_batch(img_name, img_caption, batch_size, buffer_size=256):
     """
 
     :param img_name:
@@ -45,10 +41,10 @@ def dataset_batch(img_name, img_caption, batch_size, buffer_size=1000, epoch=Non
                                                                  Tout=[tf.float32, tf.int32]),
                           num_parallel_calls=tf.data.experimental.AUTOTUNE)
     dataset = dataset.shuffle(buffer_size=buffer_size)
-    dataset = dataset.repeat(epoch).batch(batch_size, drop_remainder=True)
+    dataset = dataset.batch(batch_size, drop_remainder=True)
     dataset = dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
 
-    return iter(dataset)
+    return dataset
 
 
 def load_feature(img_name, img_caption):
@@ -104,7 +100,7 @@ def load_dataset(image_path, annotation_path, num_examples=50000):
     # store caption and image_id in vectors
     all_captions = []
     all_images = []
-
+    images_id = []
     for annotation in annotations['annotations']:
         caption = '<start> ' + annotation['caption'] + ' <end>'
         image_id = annotation['image_id']
@@ -113,7 +109,9 @@ def load_dataset(image_path, annotation_path, num_examples=50000):
         all_captions.append(caption)
         all_images.append(img_path)
 
-    # shffle captions and image_path
+    # note one image have
+    print(len(set(all_images)), len(set(all_captions))) # 118287 570281
+    # shuffle captions and image_path
     train_captions, train_images = shuffle(all_captions, all_images, random_state=0)
 
     captions = train_captions[:num_examples]
@@ -197,6 +195,9 @@ def split_dataset(image_name, sequence, split_ratio):
 
 if __name__ == "__main__":
 
+    train_image_path = os.path.join(cfgs.DATASET_PATH, 'train2017')
+    train_annotation_path = os.path.join(cfgs.DATASET_PATH, 'annotations', 'captions_train2017.json')
+
     train_images, train_captions = load_dataset(train_image_path, train_annotation_path, num_examples=50000)
     print(len(train_images), len(train_captions))
 
@@ -215,8 +216,11 @@ if __name__ == "__main__":
 
     word_index = read_from_pickle(cfgs.WORD_INDEX)
     index_word = {index:word for word, index in word_index.items()}
-    for _ in range(10):
-        feature_batch, cap_batch = next(train_dataset)
+    # for _ in range(10):
+    #     feature_batch, cap_batch = next(iter(train_dataset))
+    #     print(feature_batch.shape, cap_batch.shape)  # (batch_size, 8*8, 2048), (batch_size, max_length)
+    #     print(index_to_word(cap_batch[0].numpy(), index_word))
+    for (batch, (feature_batch, cap_batch)) in enumerate(train_dataset.take(2)):
         print(feature_batch.shape, cap_batch.shape)  # (batch_size, 8*8, 2048), (batch_size, max_length)
         print(index_to_word(cap_batch[0].numpy(), index_word))
 
