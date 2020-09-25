@@ -33,7 +33,8 @@ class BahdanauAttention(tf.keras.Model):
         hidden_with_time_axis = tf.expand_dims(hidden, axis=1)
 
         # attention_hidden_layer => (batch_size, 64, num_units)
-        attention_hidden_layer = (tf.nn.tanh(self.W1(feature) + self.W2(hidden_with_time_axis)))
+        attention_hidden_layer = (tf.nn.tanh(self.W1(feature) +
+                                             self.W2(hidden_with_time_axis)))
 
         # scores => (batch_size, 64, 1)
         scores = self.V(attention_hidden_layer)
@@ -46,6 +47,7 @@ class BahdanauAttention(tf.keras.Model):
         context_vector = tf.reduce_sum(context_vector, axis=1) #  (batch_size, embedding_dim)
 
         return context_vector, attention_weights
+
 
 
 class CNNEencoder(tf.keras.Model):

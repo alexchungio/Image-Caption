@@ -20,7 +20,12 @@ VERSION = 'Image_Caption_20200921'
 NET_NAME = 'image_caption'
 
 
-#------------------------------GPU config
+#------------------------------GPU config----------------------------------
+# device_name = tf.test.gpu_device_name()
+# if device_name != '/device:GPU:0':
+#     raise SystemError('GPU device not found')
+# print('Found GPU at: {}'.format(device_name))
+# print(tf.test.is_gpu_available())
 # ------------get gpu and cpu list------------------
 gpus = tf.config.experimental.list_physical_devices(device_type='GPU')
 # cpus = tf.config.experimental.list_physical_devices(device_type='CPU')
@@ -43,7 +48,6 @@ for gpu in gpus:
 #     device=gpus[0],
 #     logical_devices = [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=2048)]
 # )
-
 
 # ---------------------------------------- System_config----------------------------
 ROOT_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -72,8 +76,8 @@ SEQ_MAX_LENGTH = ROOT_PATH + '/outputs/seq_max_length.pickle'
 DATASET_PATH = '/media/alex/AC6A2BDB6A2BA0D6/alex_dataset/COCO_2017'
 
 #------------------------network config--------------------------------
-BATCH_SIZE = 32
-NUM_WORDS = 5000
+BATCH_SIZE = 64
+TOP_WORDS = 5000
 # SEQUENCE_LENGTH = 100 # the number in singe time dimension of a single sequence of input data
 # VOCAB_SIZE = 26
 NUM_UNITS = 512
@@ -86,7 +90,7 @@ ATTENTION_FEATURE_SHAPE = 64
 #-------------------------train config-------------------------------
 EMBEDDING_TRANSFER = False
 LEARNING_RATE = 0.001
-NUM_EPOCH = 20
+NUM_EPOCH = 30
 KEEP_PROB = 1.0
 
 # data

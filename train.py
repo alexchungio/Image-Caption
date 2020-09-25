@@ -22,20 +22,24 @@ import pickle
 import tensorflow as tf
 
 from libs.configs import cfgs
-from data.dataset_pipeline import dataset_batch, read_from_pickle, tokenize, split_dataset, load_dataset
+from data.dataset_pipeline import dataset_batch, read_from_pickle, tokenize, split_dataset, load_dataset, generate_train_samples
 from libs.nets.model import CNNEencoder, RNNDecoder, BahdanauAttention
 
 
+def main():
 
-if __name__ == "__main__":
+    # ----------------------------------generate dataset pipeline---------------------------------------
     train_image_path = os.path.join(cfgs.DATASET_PATH, 'train2017')
     train_annotation_path = os.path.join(cfgs.DATASET_PATH, 'annotations', 'captions_train2017.json')
 
-    train_images, train_captions = load_dataset(train_image_path, train_annotation_path, num_examples=50000)
+    train_images_captions = load_dataset(train_image_path, train_annotation_path)
+
+    train_images, train_captions = generate_train_samples(train_images_captions)
+
     print(len(train_images), len(train_captions))
 
     # get step per epoch
-    step_per_epoch = int(len(train_images) / cfgs.BATCH_SIZE)
+    # step_per_epoch = int(len(train_images) / cfgs.BATCH_SIZE)
 
     # initialize inception_v3 and construct model
     train_sequence = tokenize(train_captions)
@@ -47,20 +51,18 @@ if __name__ == "__main__":
     word_index = read_from_pickle(cfgs.WORD_INDEX)
     index_word = {index: word for word, index in word_index.items()}
 
-    vocab_size = len(word_index)
-    #
+
     train_dataset = dataset_batch(img_name_train, cap_train, batch_size=cfgs.BATCH_SIZE)
-
-    example_image_batch, example_cap_batch = next(iter(train_dataset))
-
+    # example_image_batch, example_cap_batch = next(iter(train_dataset))
 
 
     # show shape
-    embedding_dim = 256
-    units = 512
+    encoder = CNNEencoder(embedding_dim=cfgs.EMBEDDING_DIM)
+    decoder = RNNDecoder(embedding_dim=cfgs.EMBEDDING_DIM,
+                         units=cfgs.NUM_UNITS,
+                         vocab_size=cfgs.TOP_WORDS + 1 )  # due to add '<pad>' word to corpus
 
-    encoder = CNNEencoder(embedding_dim=embedding_dim)
-    decoder = RNNDecoder(embedding_dim, units, vocab_size)
+    # --------------------------------- test model class--------------------------------------------
 
     # feature = encoder(example_image_batch)
     # print('Encoder output shape: (batch size, 64, embedding_dim) {}'.format(feature.shape)) # (32, 64, 256)
@@ -80,6 +82,7 @@ if __name__ == "__main__":
     #
     # print('Done')
 
+    # -------------------------------------optimizer--------------------------------------
     optimizer = tf.keras.optimizers.Adam(learning_rate=cfgs.LEARNING_RATE)
 
     loss_object = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True, reduction='none')
@@ -111,7 +114,6 @@ if __name__ == "__main__":
         :param target:
         :return:
         """
-
         loss = 0
         # decoder hidden state
         hidden_states = decoder.reset_state(batch_size=target.shape[0])
@@ -148,7 +150,7 @@ if __name__ == "__main__":
         num_steps = 0
         total_loss = 0
 
-        for (batch, (image_feature, image_caption)) in enumerate(train_dataset.take(step_per_epoch)):
+        for (batch, (image_feature, image_caption)) in enumerate(train_dataset):
 
             batch_loss, t_loss = train_step(image_feature, image_caption)
             total_loss += t_loss
@@ -168,6 +170,5 @@ if __name__ == "__main__":
         print('Time taken for 1 epoch {} sec\n'.format(time.time() - start_time))
 
 
-
-
-    #
+if __name__ == "__main__":
+    main()

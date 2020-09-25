@@ -24,7 +24,7 @@ from libs.configs import cfgs
 from utils.tools import makedir
 
 
-def dataset_batch(img_name, img_caption, batch_size, buffer_size=256):
+def dataset_batch(img_name, img_caption, batch_size, buffer_size=512):
     """
 
     :param img_name:
@@ -59,14 +59,15 @@ def tokenize(texts):
     :param texts:
     :return:
     """
-    tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=cfgs.NUM_WORDS,
+    tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=cfgs.TOP_WORDS,
                                                       char_level=False,
                                                       oov_token='<unk>',
                                                       filters='!"#$%&()*+.,-/:;=?@[\]^_`{|}~ ')
     tokenizer.fit_on_texts(texts)
     tokenizer.texts_to_sequences(texts)
 
-    # update word index
+    # add <pad> to
+    # vocab_size = TOP_WORDS + 1
     tokenizer.word_index['<pad>'] = 0
     tokenizer.index_word[0] = '<pad>'
 
@@ -218,7 +219,7 @@ if __name__ == "__main__":
 
     # image_features_extract_model.summary()
     # catching the feature and extract from inception V3
-    extract_feature(train_images)
+    # extract_feature(train_images)
     train_sequence = tokenize(train_captions)
     img_name_train, img_name_val, cap_train, cap_val = split_dataset(train_images, train_sequence,
                                                                      split_ratio=cfgs.SPLIT_RATIO)
