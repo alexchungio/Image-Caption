@@ -9,17 +9,17 @@
 # @ Time       : 2020/9/21 上午11:31
 # @ Software   : PyCharm
 #-------------------------------------------------------
-
-import numpy as np
 import os
+import random
+import numpy as np
 import json
 import pickle
 import tensorflow as tf
+import collections
 
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 from tqdm import tqdm
-
 from libs.configs import cfgs
 from utils.tools import makedir
 
@@ -86,7 +86,31 @@ def tokenize(texts):
 
     return sequence
 
-def load_dataset(image_path, annotation_path, num_examples=50000):
+
+def generate_train_samples(image_path_to_caption, num_images=8000):
+    """
+    num
+    :param image_path_to_caption:
+    :param num_images: Approximately each image id has 5 captions associated with it, so that will lead to 40,000 examples.
+    :return:
+    """
+    random.seed(0)
+    image_paths = list(image_path_to_caption.keys())
+    random.shuffle(image_paths)
+    # Select the first 6000 image_paths from the shuffled set.
+
+    train_image_samples = image_paths[:num_images]
+
+    train_captions = []
+    train_images = []
+    for image_path in train_image_samples:
+        caption_list = image_path_to_caption[image_path]
+        train_captions.extend(['<start> ' + caption + ' <end>' for caption in caption_list])
+        train_images.extend([image_path] * len(caption_list))
+    return train_images, train_captions
+
+
+def load_dataset(image_path, annotation_path):
     """
     load image and caption
     :param image_path:
@@ -98,26 +122,13 @@ def load_dataset(image_path, annotation_path, num_examples=50000):
         annotations = json.load(f)
 
     # store caption and image_id in vectors
-    all_captions = []
-    all_images = []
-    images_id = []
+    image_path_to_caption = collections.defaultdict(list)
     for annotation in annotations['annotations']:
         caption = '<start> ' + annotation['caption'] + ' <end>'
-        image_id = annotation['image_id']
-        img_path = os.path.join(image_path, '{:012d}.jpg'.format(image_id))
+        img_path = os.path.join(image_path, '{:012d}.jpg'.format(annotation['image_id']))
+        image_path_to_caption[img_path].append(caption)
 
-        all_captions.append(caption)
-        all_images.append(img_path)
-
-    # note one image have
-    print(len(set(all_images)), len(set(all_captions))) # 118287 570281
-    # shuffle captions and image_path
-    train_captions, train_images = shuffle(all_captions, all_images, random_state=0)
-
-    captions = train_captions[:num_examples]
-    images = train_images[:num_examples]
-
-    return images, captions
+    return  image_path_to_caption
 
 
 def load_image(image_path):
@@ -182,8 +193,9 @@ def index_to_word(tensor, index_word):
 
 def split_dataset(image_name, sequence, split_ratio):
     img_name_train, img_name_val, cap_train, cap_val = train_test_split(image_name,
-                                                                                  sequence,
-                                                                                  test_size=split_ratio)
+                                                                        sequence,
+                                                                        test_size=split_ratio,
+                                                                        shuffle=True)
     return img_name_train, img_name_val, cap_train, cap_val
 
 
@@ -198,14 +210,15 @@ if __name__ == "__main__":
     train_image_path = os.path.join(cfgs.DATASET_PATH, 'train2017')
     train_annotation_path = os.path.join(cfgs.DATASET_PATH, 'annotations', 'captions_train2017.json')
 
-    train_images, train_captions = load_dataset(train_image_path, train_annotation_path, num_examples=50000)
-    print(len(train_images), len(train_captions))
+    train_images_captions = load_dataset(train_image_path, train_annotation_path)
+
+    train_images, train_captions = generate_train_samples(train_images_captions)
 
     # initialize inception_v3 and construct model
 
     # image_features_extract_model.summary()
     # catching the feature and extract from inception V3
-    # extract_feature(train_images)
+    extract_feature(train_images)
     train_sequence = tokenize(train_captions)
     img_name_train, img_name_val, cap_train, cap_val = split_dataset(train_images, train_sequence,
                                                                      split_ratio=cfgs.SPLIT_RATIO)
@@ -220,7 +233,7 @@ if __name__ == "__main__":
     #     feature_batch, cap_batch = next(iter(train_dataset))
     #     print(feature_batch.shape, cap_batch.shape)  # (batch_size, 8*8, 2048), (batch_size, max_length)
     #     print(index_to_word(cap_batch[0].numpy(), index_word))
-    for (batch, (feature_batch, cap_batch)) in enumerate(train_dataset.take(2)):
+    for (batch, (feature_batch, cap_batch)) in enumerate(train_dataset):
         print(feature_batch.shape, cap_batch.shape)  # (batch_size, 8*8, 2048), (batch_size, max_length)
         print(index_to_word(cap_batch[0].numpy(), index_word))
 
