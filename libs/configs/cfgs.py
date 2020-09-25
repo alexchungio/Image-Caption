@@ -77,7 +77,7 @@ DATASET_PATH = '/media/alex/AC6A2BDB6A2BA0D6/alex_dataset/COCO_2017'
 
 #------------------------network config--------------------------------
 BATCH_SIZE = 64
-TOP_WORDS = 5000
+TOP_WORDS = 6000
 # SEQUENCE_LENGTH = 100 # the number in singe time dimension of a single sequence of input data
 # VOCAB_SIZE = 26
 NUM_UNITS = 512
@@ -90,7 +90,7 @@ ATTENTION_FEATURE_SHAPE = 64
 #-------------------------train config-------------------------------
 EMBEDDING_TRANSFER = False
 LEARNING_RATE = 0.001
-NUM_EPOCH = 30
+NUM_EPOCH = 40
 KEEP_PROB = 1.0
 
 # data
