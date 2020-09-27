@@ -91,7 +91,10 @@ if __name__ == "__main__":
                                      encoder=encoder,
                                      decoder=decoder)
     # restoring the latest checkpoint in checkpoint_dir
-    checkpoint.restore(tf.train.latest_checkpoint(cfgs.TRAINED_CKPT))
+    ckpt_path = tf.train.latest_checkpoint(cfgs.TRAINED_CKPT)
+    print(ckpt_path)
+
+    checkpoint.restore(ckpt_path)
 
     image_path = os.path.abspath(os.path.join('../tools/demo', 'surf.jpg'))
 
