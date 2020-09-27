@@ -125,7 +125,7 @@ def load_dataset(image_path, annotation_path):
     # store caption and image_id in vectors
     image_path_to_caption = collections.defaultdict(list)
     for annotation in annotations['annotations']:
-        caption = '<start> ' + annotation['caption'] + ' <end>'
+        caption = annotation['caption']
         img_path = os.path.join(image_path, '{:012d}.jpg'.format(annotation['image_id']))
         image_path_to_caption[img_path].append(caption)
 
@@ -224,7 +224,7 @@ if __name__ == "__main__":
 
     # image_features_extract_model.summary()
     # catching the feature and extract from inception V3
-    # extract_feature(train_images)
+    extract_feature(train_images)
     train_sequence = tokenize(train_captions)
     img_name_train, img_name_val, cap_train, cap_val = split_dataset(train_images, train_sequence,
                                                                      split_ratio=cfgs.SPLIT_RATIO)
