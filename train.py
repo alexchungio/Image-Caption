@@ -49,18 +49,15 @@ def main():
 
     # get word_index and index word
     word_index = read_from_pickle(cfgs.WORD_INDEX)
-    index_word = {index: word for word, index in word_index.items()}
-
 
     train_dataset = dataset_batch(img_name_train, cap_train, batch_size=cfgs.BATCH_SIZE)
     # example_image_batch, example_cap_batch = next(iter(train_dataset))
-
 
     # show shape
     encoder = CNNEencoder(embedding_dim=cfgs.EMBEDDING_DIM)
     decoder = RNNDecoder(embedding_dim=cfgs.EMBEDDING_DIM,
                          units=cfgs.NUM_UNITS,
-                         vocab_size=cfgs.TOP_WORDS + 1 )  # due to add '<pad>' word to corpus
+                         vocab_size=cfgs.TOP_WORDS + 1)  # due to add '<pad>' word to corpus
 
     # --------------------------------- test model class--------------------------------------------
 
@@ -82,17 +79,18 @@ def main():
     #
     # print('Done')
 
-    # -------------------------------------optimizer--------------------------------------
+    # -------------------------------------initial optimizer--------------------------------------
     optimizer = tf.keras.optimizers.Adam(learning_rate=cfgs.LEARNING_RATE)
-
     loss_object = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True, reduction='none')
 
 
     def loss_function(target, pred):
         mask = tf.math.logical_not(tf.math.equal(target, 0))
         loss_ = loss_object(target, pred)
+
         mask = tf.cast(mask, dtype=loss_.dtype)
         loss_ *= mask
+
         return tf.reduce_mean(loss_)
 
     # checkpoint
@@ -107,33 +105,38 @@ def main():
 
     # --------------------------------- train_step---------------------------------------------
     @tf.function
-    def train_step(image_feature, target):
+    def train_step(img_feature, target):
         """
 
-        :param image_feature:
+        :param img_feature:
         :param target:
         :return:
         """
         loss = 0
-        # decoder hidden state
-        hidden_states = decoder.reset_state(batch_size=target.shape[0])
-        # decoder input per step
-        decoder_input = tf.expand_dims([word_index['<start>']] * target.shape[0], axis=1)
+        # initializing the hidden state for each batch
+        # because the captions are not related from image to image
+        hidden = decoder.reset_state(batch_size=target.shape[0])
+
+        # initial decode input with <start>
+        dec_input = tf.expand_dims([word_index['<start>']] * target.shape[0], 1)
 
         with tf.GradientTape() as tape:
             # get encoder feature
-            feature = encoder(image_feature)
+            features = encoder(img_feature)
 
             for i in range(1, target.shape[1]):
-                predictions, hidden_states, _ = decoder(x=decoder_input, feature=feature, hidden=hidden_states)
+                # passing the features through the decoder
+                predictions, hidden, _ = decoder(dec_input, features, hidden)
 
                 loss += loss_function(target[:, i], predictions)
 
-                # teacher forcing the target word is passed as the next input to the decoder
-                decoder_input = tf.expand_dims(target[:, i], axis=1)
+                # using teacher forcing
+                dec_input = tf.expand_dims(target[:, i], 1)
 
         total_loss = (loss / int(target.shape[1]))
-        trainable_variables = encoder.trainable_variables + encoder.trainable_variables
+
+        # get all trainable variables
+        trainable_variables = encoder.trainable_variables + decoder.trainable_variables
 
         gradients = tape.gradient(loss, trainable_variables)
 
@@ -141,9 +144,8 @@ def main():
 
         return loss, total_loss
 
-
+    # ------------------------------ execute train----------------------------------------
     summary_writer = tf.summary.create_file_writer(cfgs.SUMMARY_PATH)
-
     for epoch in range(start_epoch, cfgs.NUM_EPOCH):
 
         start_time = time.time()

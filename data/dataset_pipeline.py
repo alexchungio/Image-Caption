@@ -197,11 +197,12 @@ def index_to_word(tensor, index_word):
     return text
 
 
-def split_dataset(image_name, sequence, split_ratio):
+def split_dataset(image_name, sequence, split_ratio, random_state=0):
     img_name_train, img_name_val, cap_train, cap_val = train_test_split(image_name,
                                                                         sequence,
                                                                         test_size=split_ratio,
-                                                                        shuffle=True)
+                                                                        shuffle=True,
+                                                                        random_state=random_state)
     return img_name_train, img_name_val, cap_train, cap_val
 
 

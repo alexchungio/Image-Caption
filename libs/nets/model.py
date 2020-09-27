@@ -49,7 +49,6 @@ class BahdanauAttention(tf.keras.Model):
         return context_vector, attention_weights
 
 
-
 class CNNEencoder(tf.keras.Model):
     """
 
