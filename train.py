@@ -132,7 +132,7 @@ def main():
                 # teacher forcing the target word is passed as the next input to the decoder
                 decoder_input = tf.expand_dims(target[:, i], axis=1)
 
-        total_loss = loss / int(target.shape[1])
+        total_loss = (loss / int(target.shape[1]))
         trainable_variables = encoder.trainable_variables + encoder.trainable_variables
 
         gradients = tape.gradient(loss, trainable_variables)
@@ -143,7 +143,7 @@ def main():
 
 
     summary_writer = tf.summary.create_file_writer(cfgs.SUMMARY_PATH)
-    loss_plot = []
+
     for epoch in range(start_epoch, cfgs.NUM_EPOCH):
 
         start_time = time.time()

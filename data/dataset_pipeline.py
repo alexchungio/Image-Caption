@@ -140,19 +140,24 @@ def load_image(image_path):
     return img, image_path
 
 
-def extract_feature(image_path):
-    """
-
-    :param image_path:
-    :return:
-    """
+def feature_extract_model():
     image_model = tf.keras.applications.InceptionV3(include_top=False, weights='imagenet')
     new_input = image_model.input
     hidden_layer = image_model.layers[-1].output
     print('input: name {} -- shape {}'.format(new_input.op.name, new_input.shape))
     print('output: name {} -- shape {}'.format(hidden_layer.op.name, hidden_layer.shape))
     image_features_extract_model = tf.keras.Model(new_input, hidden_layer)
+    
+    return image_features_extract_model
 
+def extract_feature(image_path):
+    """
+
+    :param image_path:
+    :return:
+    """
+
+    image_features_extract_model = feature_extract_model()
     sorted_image = sorted(set(image_path))
     image_dataset = tf.data.Dataset.from_tensor_slices(sorted_image)
     image_dataset = image_dataset.map(load_image, num_parallel_calls=tf.data.experimental.AUTOTUNE).batch(16)
