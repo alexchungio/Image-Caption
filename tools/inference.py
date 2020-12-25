@@ -37,6 +37,7 @@ def plot_attention(image, result, attention_plot):
 
     len_result = len(result)
     for l in range(len_result):
+        # reshape to the size of CNN extract feature
         temp_att = np.resize(attention_plot[l], (8, 8))
         ax = fig.add_subplot(len_result//2, len_result//2, l+1)
         ax.set_title(result[l])
